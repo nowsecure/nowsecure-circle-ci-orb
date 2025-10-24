@@ -1,0 +1,43 @@
+description: >
+  Recommended Job Strategy:
+  NowSecure recommends reserving a full analysis for releases and release-candidates, and utilizing a static analysis otherwise.
+  This allows customers a quicker CI pipeline in most cases, reserving the more in-depth analysis for pre-release code.
+usage:
+  version: 2.1
+  orbs:
+    test-orb: test-orb@1.2.3
+  workflows:
+    security-scan:
+      jobs:
+        - build-job:  # your custom job, that builds a binary artifact
+            post-steps:
+              - persist_to_workspace: # Persist the binary to a workspace
+                  root: ./build
+                  paths:
+                    - some-binary.apk
+        - test-orb/analyze:
+            requires: # require the build step to succeed before running a security assessment
+              - build
+            filters:
+              tags:
+                ignore: /^v.*/
+            pre-steps:
+              - attach_workspace:
+                at: /tmp
+            binary_file: /tmp/build/some-binary.apk # this path should match the attached workspace
+            group: some-group
+            token: NS_TOKEN
+        - test-orb/analyze:
+            requires: # require the build step to succeed before running a security assessment
+              - build
+            filters:
+              tags:
+                only: /^v.*/
+            pre-steps:
+              - attach_workspace:
+                at: /tmp/workspace
+            analysis_type: full
+            polling_duration_minutes: 90
+            binary_file: /tmp/build/some-binary.apk # this path should match the attached workspace
+            group: some-group
+            token: NS_TOKEN

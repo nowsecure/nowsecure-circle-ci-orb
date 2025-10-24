@@ -1,0 +1,58 @@
+description: >
+  This command uploads a file and runs a security assessment
+parameters:
+  artifact_dir:
+    type: string
+    default: ./artifacts/nowsecure
+    description: Defines the directory for nowsecure artifacts to be output to. In the case of the default assessment results would be `./artifacts/nowsecure/assessment.json`
+  analysis_type:
+    type: enum
+    default: static
+    enum: [full, static]
+    description: TODO
+  binary_file:
+    type: string
+    description: Defines the filepath for the ipa / apk that is to be uploaded to run an assessments against. If your artifact was built in a separate job, you should attach a [workspace](https://circleci.com/docs/workspaces/) via a 'pre-steps' step to this job
+  polling_duration_minutes:
+    type: integer
+    default: 60
+    description: Defines the length of time (in minutes) to poll for a  full assessment (static + dynamic) job completion.
+  group:
+    type: string
+    description: Defines the group reference that is used to trigger assessments.  Information on how to get the group reference can be found in the NowSecure support portal (https://support.nowsecure.com/hc/en-us/articles/38057956447757-Retrieve-Reference-and-ID-Numbers-for-API-Use-Task-ID-Group-App-and-Assessment-Ref).
+  api_host:
+    type: string
+    default: https://lab-api.nowsecure.com
+    description: Defines the NowSecure base API to use.  This will not change unless you are leveraging a single tenant.
+  ui_host:
+    type: string
+    default: https://app.nowsecure.com
+    description: Defines the NowSecure base UI to use.  This will not change unless you are leveraging a single tenant.
+  log_level:
+    type: enum
+    default: info
+    enum: [warn, info, debug]
+    description: Defines the log level set for the NowSecure analysis task.
+  minimum_score:
+    type: integer
+    default: -1
+    description: Defines the score under which a full assessment (static + dynamic) will fail.
+  token:
+    type: env_var_name
+    default: NS_TOKEN
+    description: Defines the environment variable name containing the token used to communicate with the NowSecure API. Information on how to create a token can be found in the NowSecure Support Portal (https://support.nowsecure.com/hc/en-us/articles/7499657262093-Creating-a-NowSecure-Platform-API-Bearer-Token).
+steps:
+  - run:
+      environment:
+        PARAM_NS_TOKEN: $<<parameters.token>>
+        PARAM_ARTIFACT_DIR: <<parameters.artifact_dir>>
+        PARAM_ANALYSIS_TYPE: <<parameters.analysis_type>>
+        PARAM_BINARY_FILE: <<parameters.binary_file>>
+        PARAM_POLLING_DURATION_MINUTES: <<parameters.polling_duration_minutes>>
+        PARAM_GROUP: <<parameters.group>>
+        PARAM_API_HOST: <<parameters.api_host>>
+        PARAM_UI_HOST: <<parameters.ui_host>>
+        PARAM_LOG_LEVEL: <<parameters.log_level>>
+        PARAM_MINIMUM_SCORE: <<parameters.minimum_score>>
+      name: NowSecure Assessment
+      command: <<include(scripts/ns_run.sh)>>

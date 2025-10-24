@@ -1,0 +1,67 @@
+description: >
+  This job uploads a file and runs a security assessment
+
+parameters:
+  tag:
+    type: string
+    default: "0.1"
+    description: Defines version of the underlying NowSecure docker image to use.
+  analysis_type:
+    type: enum
+    default: static
+    enum: [full, static]
+    description: Defines the type of assessment to run.  The 'full' runs both dynamic and static analysis tooling.  The 'static' option runs only static.
+  artifact_dir:
+    type: string
+    default: ./artifacts/nowsecure
+    description: Defines the directory for nowsecure artifacts to be output to. In the case of the default assessment results would be `./artifacts/nowsecure/assessment.json`
+  binary_file:
+    type: string
+    description: Defines the filepath for the ipa / apk that is to be uploaded to run an assessments against. If your artifact was built in a separate job, you should attach a [workspace](https://circleci.com/docs/workspaces/) via a 'pre-steps' step to this job
+  group:
+    type: string
+    description: Defines the group reference that is used to trigger assessments.  Information on how to get the group reference can be found in the NowSecure support portal (https://support.nowsecure.com/hc/en-us/articles/38057956447757-Retrieve-Reference-and-ID-Numbers-for-API-Use-Task-ID-Group-App-and-Assessment-Ref).
+  api_host:
+    type: string
+    default: https://lab-api.nowsecure.com
+    description: Defines the NowSecure base API to use.  This will not change unless you are leveraging a single tenant.
+  ui_host:
+    type: string
+    default: https://app.nowsecure.com
+    description: Defines the NowSecure base UI to use.  This will not change unless you are leveraging a single tenant.
+  log_level:
+    type: enum
+    default: info
+    enum: [warn, info, debug]
+    description: Defines the log level set for the NowSecure analysis task.
+  minimum_score:
+    type: integer
+    default: -1
+    description: Defines the score under which a full assessment (static + dynamic) will fail.
+  polling_duration_minutes:
+    type: integer
+    default: 20
+    description: Defines the length of time (in minutes) to poll for a static only assessment job completion.
+  token:
+    type: env_var_name
+    default: "NS_TOKEN"
+    description: Defines the environment variable name containing the token used to communicate with the NowSecure API. Information on how to create a token can be found in the NowSecure Support Portal (https://support.nowsecure.com/hc/en-us/articles/7499657262093-Creating-a-NowSecure-Platform-API-Bearer-Token).
+
+executor:
+  name: nowsecure_ci
+  tag: <<parameters.tag>>
+
+steps:
+  - run_assessment:
+      analysis_type: <<parameters.analysis_type>>
+      artifact_dir: <<parameters.artifact_dir>>
+      binary_file: <<parameters.binary_file>>
+      group: <<parameters.group>>
+      api_host: <<parameters.api_host>>
+      ui_host: <<parameters.ui_host>>
+      log_level: <<parameters.log_level>>
+      minimum_score: <<parameters.minimum_score>>
+      polling_duration_minutes: <<parameters.polling_duration_minutes>>
+      token: <<parameters.token>>
+  - store_artifacts:
+      path: <<parameters.artifact_dir>>
