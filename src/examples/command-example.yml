@@ -5,7 +5,7 @@ description: >
 usage:
   version: 2.1
   orbs:
-    test-orb: test-orb@1.2.3
+    nowsecure-circle-ci-orb: nowsecure-circle-ci-orb@1.2.3
   workflows:
     security-scan:
       jobs:
@@ -17,7 +17,7 @@ usage:
                   condition:
                     matches: {pattern: "^v.*$", value: <<pipeline.git.tag>>}
                   steps:
-                    - test-orb/analyze:
+                    - nowsecure-circle-ci-orb/analyze:
                         binary_file: ./build/test.apk
                         analysis_type: full
                         polling_duration_minutes: 90
@@ -27,7 +27,7 @@ usage:
                   condition:
                     matches: {pattern: "^v.*$", value: <<pipeline.git.tag>>}
                   steps:
-                    - test-orb/analyze:
+                    - nowsecure-circle-ci-orb/analyze:
                         binary_file: ./build/test.apk
                         analysis_type: static
                         polling_duration_minutes: 20

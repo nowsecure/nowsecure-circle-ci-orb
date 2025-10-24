@@ -5,7 +5,7 @@ description: >
 usage:
   version: 2.1
   orbs:
-    test-orb: test-orb@1.2.3
+    nowsecure-circle-ci-orb: test-orb@1.2.3
   workflows:
     security-scan:
       jobs:
@@ -15,7 +15,7 @@ usage:
                   root: ./build
                   paths:
                     - some-binary.apk
-        - test-orb/analyze:
+        - nowsecure-circle-ci-orb/analyze:
             requires: # require the build step to succeed before running a security assessment
               - build
             filters:
@@ -27,7 +27,7 @@ usage:
             binary_file: /tmp/build/some-binary.apk # this path should match the attached workspace
             group: some-group
             token: NS_TOKEN
-        - test-orb/analyze:
+        - nowsecure-circle-ci-orb/analyze:
             requires: # require the build step to succeed before running a security assessment
               - build
             filters:
