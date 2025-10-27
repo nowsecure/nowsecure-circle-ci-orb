@@ -32,7 +32,7 @@ jobs:
       - checkout
       # Run your orb's commands to validate them.
       - nowsecure-circle-ci-orb/run_assessment:
-          binary_file: ./test.apk
+          binary_file: ./test/MASTG-DEMO-0031.apk
           polling_duration_minutes: 20
           log_level: debug
           group: NS_STG_GROUP
@@ -53,7 +53,7 @@ workflows:
           filters: *filters
           pre-steps:
             - checkout
-          binary_file: ./test.apk
+          binary_file: ./test/MASTG-DEMO-0031.apk
           polling_duration_minutes: 20
           log_level: debug
           group: NS_STG_GROUP

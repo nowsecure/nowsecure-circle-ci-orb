@@ -9,7 +9,7 @@ parameters:
     type: enum
     default: static
     enum: [full, static]
-    description: TODO
+    description: Defines the type of assessment to run.  The 'full' runs both dynamic and static analysis tooling.  The 'static' option runs only static.
   binary_file:
     type: string
     description: Defines the filepath for the ipa / apk that is to be uploaded to run an assessments against. If your artifact was built in a separate job, you should attach a [workspace](https://circleci.com/docs/workspaces/) via a 'pre-steps' step to this job
