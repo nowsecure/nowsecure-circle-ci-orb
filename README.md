@@ -1,62 +1,79 @@
-# Orb Template
+# Overview
+
+NowSecure provides purpose-built, fully automated mobile application security testing (static and dynamic) for your development pipeline.
+By testing your mobile application binary post-build from CircleCI, NowSecure ensures comprehensive coverage of newly developed code, third party components, and system dependencies.
+
+NowSecure quickly identifies and details real issues, provides remediation recommendations, and integrates with ticketing systems such as Azure DevOps and Jira.
+
+This integration requires a NowSecure platform license. See <https://www.nowsecure.com> for more information.
+
+## Getting Started
+
+### Sample Usage
+
+First, find this orb in the [CircleCI Orb Registry](https://circleci.com/developer/orbs)
+
+Then follow along with the instructions on this orb's [registry page](https://circleci.com/developer/orbs/orb/nowsecure/nowsecure-circle-ci-orb)
 
 
-[![CircleCI Build Status](https://circleci.com/gh/nowsecure/nowsecure-circle-ci-orb.svg?style=shield "CircleCI Build Status")](https://circleci.com/gh/nowsecure/nowsecure-circle-ci-orb) [![CircleCI Orb Version](https://badges.circleci.com/orbs/nowsecure/nowsecure-circle-ci-orb.svg)](https://circleci.com/developer/orbs/orb/nowsecure/nowsecure-circle-ci-orb) [![GitHub License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://raw.githubusercontent.com/nowsecure/nowsecure-circle-ci-orb/master/LICENSE) [![CircleCI Community](https://img.shields.io/badge/community-CircleCI%20Discuss-343434.svg)](https://discuss.circleci.com/c/ecosystem/orbs)
+### Configuration
 
+To add this component to your CI/CD pipeline, the following should be done:
 
+- Get a token from your NowSecure platform instance. More information on this can be found in the [NowSecure Support Portal](https://support.nowsecure.com/hc/en-us/articles/7499657262093-Creating-a-NowSecure-Platform-API-Bearer-Token).
+- Identify the ID of the group in NowSecure Platform that you want your assessment to be included in. More information on this can be found in the
+  [NowSecure Support Portal](https://support.nowsecure.com/hc/en-us/articles/38057956447757-Retrieve-Reference-and-ID-Numbers-for-API-Use-Task-ID-Group-App-and-Assessment-Ref).
+- Add a [CircleCI environment variable](https://circleci.com/docs/guides/security/set-environment-variable/#set-an-environment-variable-in-a-project) to your project named, NS_TOKEN. Set this to the value of the token created above.
 
-A project template for Orbs.
+## Usage Examples
 
-This repository is designed to be automatically ingested and modified by the CircleCI CLI's `orb init` command.
+> [!NOTE]
+> Full usage examples can be found in the [src/examples](./src/examples) directory
 
-_**Edit this area to include a custom title and description.**_
+### Sample job configuration
 
----
+NowSecure recommends running a 'static' assessment for commits and PR events, and saving 'full' (static and dynamic) assessments for release and release candidate tags. 
 
-## Resources
+This strategy allows developers quick feedback for the majority of their commits, while still ensuring thorough security testing before app releases.
 
-[CircleCI Orb Registry Page](https://circleci.com/developer/orbs/orb/nowsecure/nowsecure-circle-ci-orb) - The official registry page of this orb for all versions, executors, commands, and jobs described.
-
-[CircleCI Orb Docs](https://circleci.com/docs/orb-intro/#section=configuration) - Docs for using, creating, and publishing CircleCI Orbs.
-
-### How to Contribute
-
-We welcome [issues](https://github.com/nowsecure/nowsecure-circle-ci-orb/issues) to and [pull requests](https://github.com/nowsecure/nowsecure-circle-ci-orb/pulls) against this repository!
-
-### How to Publish An Update
-1. Merge pull requests with desired changes to the main branch.
-    - For the best experience, squash-and-merge and use [Conventional Commit Messages](https://conventionalcommits.org/).
-2. Find the current version of the orb.
-    - You can run `circleci orb info nowsecure/nowsecure-circle-ci-orb | grep "Latest"` to see the current version.
-3. Create a [new Release](https://github.com/nowsecure/nowsecure-circle-ci-orb/releases/new) on GitHub.
-    - Click "Choose a tag" and _create_ a new [semantically versioned](http://semver.org/) tag. (ex: v1.0.0)
-      - We will have an opportunity to change this before we publish if needed after the next step.
-4.  Click _"+ Auto-generate release notes"_.
-    - This will create a summary of all of the merged pull requests since the previous release.
-    - If you have used _[Conventional Commit Messages](https://conventionalcommits.org/)_ it will be easy to determine what types of changes were made, allowing you to ensure the correct version tag is being published.
-5. Now ensure the version tag selected is semantically accurate based on the changes included.
-6. Click _"Publish Release"_.
-    - This will push a new tag and trigger your publishing pipeline on CircleCI.
-
-### Development Orbs
-
-Prerequisites:
-
-- An initial sevmer deployment must be performed in order for Development orbs to be published and seen in the [Orb Registry](https://circleci.com/developer/orbs).
-
-A [Development orb](https://circleci.com/docs/orb-concepts/#development-orbs) can be created to help with rapid development or testing. To create a Development orb, change the `orb-tools/publish` job in `test-deploy.yml` to be the following:
-
-```yaml
-- orb-tools/publish:
-    orb_name: nowsecure/nowsecure-circle-ci-orb
-    vcs_type: << pipeline.project.type >>
-    pub_type: dev
-    # Ensure this job requires all test jobs and the pack job.
-    requires:
-      - orb-tools/pack
-      - command-test
-    context: orb-publishing
-    filters: *filters
+``` yaml
+usage:
+  version: 2.1
+  orbs:
+    nowsecure-circle-ci-orb: test-orb@1.2.3
+  workflows:
+    security-scan:
+      jobs:
+        - build-job:  # your custom job, that builds a binary artifact
+            post-steps:
+              - persist_to_workspace: # Persist the binary to a workspace
+                  root: ./build
+                  paths:
+                    - some-binary.apk
+        - nowsecure-circle-ci-orb/analyze:
+            requires: # require the build step to succeed before running a security assessment
+              - build
+            filters:
+              tags:
+                ignore: /^v.*/
+            pre-steps:
+              - attach_workspace:
+                at: /tmp
+            binary_file: /tmp/build/some-binary.apk # this path should match the attached workspace
+            group: 00000000-0000-0000-0000-000000000000
+            token: NS_TOKEN
+        - nowsecure-circle-ci-orb/analyze:
+            requires: # require the build step to succeed before running a security assessment
+              - build
+            filters:
+              tags:
+                only: /^v.*/
+            pre-steps:
+              - attach_workspace:
+                at: /tmp/workspace
+            analysis_type: full
+            polling_duration_minutes: 90
+            binary_file: /tmp/build/some-binary.apk # this path should match the attached workspace
+            group: 00000000-0000-0000-0000-000000000000
+            token: NS_TOKEN
 ```
-
-The job output will contain a link to the Development orb Registry page. The parameters `enable_pr_comment` and `github_token` can be set to add the relevant publishing information onto a pull request. Please refer to the [orb-tools/publish](https://circleci.com/developer/orbs/orb/circleci/orb-tools#jobs-publish) documentation for more information and options.

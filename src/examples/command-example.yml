@@ -1,0 +1,35 @@
+description: >
+  Recommended Command Strategy
+  NowSecure recommends reserving a full analysis for releases and release-candidates, and utilizing a static analysis otherwise.
+  This allows customers a quicker CI pipeline in most cases, reserving the more in-depth analysis for pre-release code.
+usage:
+  version: 2.1
+  orbs:
+    nowsecure-circle-ci-orb: nowsecure-circle-ci-orb@1.2.3
+  workflows:
+    security-scan:
+      jobs:
+        - analyze-binary:
+            steps:
+              - checkout
+              - run: ./gradlew clean assemble
+              - when:
+                  condition:
+                    matches: {pattern: "^v.*$", value: <<pipeline.git.tag>>}
+                  steps:
+                    - nowsecure-circle-ci-orb/analyze:
+                        binary_file: ./build/test.apk
+                        analysis_type: full
+                        polling_duration_minutes: 90
+                        group: some-group
+                        token: NS_TOKEN
+              - unless:
+                  condition:
+                    matches: {pattern: "^v.*$", value: <<pipeline.git.tag>>}
+                  steps:
+                    - nowsecure-circle-ci-orb/analyze:
+                        binary_file: ./build/test.apk
+                        analysis_type: static
+                        polling_duration_minutes: 20
+                        group: some-group
+                        token: NS_TOKEN
