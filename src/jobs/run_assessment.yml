@@ -4,7 +4,7 @@ description: >
 parameters:
   tag:
     type: string
-    default: "0.1"
+    default: "0.2"
     description: Defines version of the underlying NowSecure docker image to use.
   analysis_type:
     type: enum
