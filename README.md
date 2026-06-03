@@ -40,7 +40,7 @@ This strategy allows developers quick feedback for the majority of their commits
 usage:
   version: 2.1
   orbs:
-    nowsecure-circle-ci-orb: test-orb@0.1.0
+    nowsecure-circle-ci-orb: test-orb@0.2.1
   workflows:
     security-scan:
       jobs:
