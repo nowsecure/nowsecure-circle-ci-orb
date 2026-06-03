@@ -4,7 +4,7 @@ description: >
 parameters:
   tag:
     type: string
-    default: "0.1"
+    default: "0.2"
     description: Defines version of the underlying NowSecure docker image to use.
   analysis_type:
     type: enum
@@ -23,7 +23,7 @@ parameters:
     description: Defines the group reference that is used to trigger assessments.  Information on how to get the group reference can be found in the NowSecure support portal (https://support.nowsecure.com/hc/en-us/articles/38057956447757-Retrieve-Reference-and-ID-Numbers-for-API-Use-Task-ID-Group-App-and-Assessment-Ref).
   api_host:
     type: string
-    default: https://lab-api.nowsecure.com
+    default: https://api.nowsecure.com
     description: Defines the NowSecure base API to use.  This will not change unless you are leveraging a single tenant.
   ui_host:
     type: string
